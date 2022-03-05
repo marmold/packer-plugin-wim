@@ -4,6 +4,8 @@ package wimcreate
 
 import (
 	"context"
+	"fmt"
+	"path/filepath"
 
 	"github.com/hashicorp/hcl/v2/hcldec"
 	"github.com/hashicorp/packer-plugin-sdk/common"
@@ -61,6 +63,19 @@ func (pp *PostProcessor) Configure(raws ...interface{}) error {
 }
 
 func (pp PostProcessor) PostProcess(context context.Context, ui packer.Ui, baseArtifact packer.Artifact) (newArtifact packer.Artifact, keep, mustKeep bool, err error) {
+
+	// Check if the source file is VHDX (VHD also?) format.
+	source := ""
+	for _, i := range baseArtifact.Files() {
+		if filepath.Ext(i) == ".vhdx" {
+			source = i
+			ui.Message(fmt.Sprintf("Found VHDX file: '%s'", source))
+			break
+		} else {
+			ui.Message(fmt.Sprintf("No VHDX file has been found"))
+			return nil, false, false, fmt.Errorf("No VHDX file has been found")
+		}
+	}
 
 	// Final return.
 	return newArtifact, keep, mustKeep, err
