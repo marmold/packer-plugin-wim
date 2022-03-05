@@ -92,7 +92,7 @@ func (pp PostProcessor) PostProcess(context context.Context, ui packer.Ui, baseA
 	ui.Message(fmt.Sprintf("Base directory for artifact created: '%s'", baseDir))
 
 	// Create temp mount directory. The directory will be created with random number suffix.
-	mountDir, err := os.MkdirTemp(currentDir, "mount_")
+	mountDir, err := os.MkdirTemp(baseDir, "mount_")
 	if err != nil {
 		log.Fatal(err)
 	}
