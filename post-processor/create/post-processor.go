@@ -55,7 +55,7 @@ func (pp *PostProcessor) Configure(raws ...interface{}) error {
 
 	// Set any defaults if needed.
 	if pp.config.ImageName == "" {
-		pp.config.ImageName = "" // Add deafult name later.
+		pp.config.ImageName = "test-wim-name"
 	}
 
 	// Return no errors if everything is good.
@@ -123,6 +123,9 @@ func (pp PostProcessor) PostProcess(context context.Context, ui packer.Ui, baseA
 		log.Fatal(err)
 	}
 	ui.Message(fmt.Sprintf("VHDX Image %s successfully unmounted from: '%s'", source, mountDir))
+
+	// Declare new final artifact
+	newArtifact = &WimArtifact{Path: baseDir, Name: pp.config.ImageName}
 
 	// Final return.
 	return newArtifact, keep, mustKeep, err
