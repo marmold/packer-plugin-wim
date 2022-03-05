@@ -24,7 +24,6 @@
         {
             "type": "wim",
             "image_name": "test-image",
-            "image_path": "test-image-dir",
             "image_description": "This is a test description"
         }
     ]

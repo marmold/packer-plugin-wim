@@ -5,7 +5,10 @@ package wimcreate
 import (
 	"context"
 	"fmt"
+	"log"
+	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/hashicorp/hcl/v2/hcldec"
 	"github.com/hashicorp/packer-plugin-sdk/common"
@@ -54,10 +57,6 @@ func (pp *PostProcessor) Configure(raws ...interface{}) error {
 		pp.config.ImageName = "" // Add deafult name later.
 	}
 
-	if pp.config.ImagePath == "" {
-		pp.config.ImagePath = "" // Add default path later.
-	}
-
 	// Return no errors if everything is good.
 	return nil
 }
@@ -76,6 +75,29 @@ func (pp PostProcessor) PostProcess(context context.Context, ui packer.Ui, baseA
 			return nil, false, false, fmt.Errorf("No VHDX file has been found")
 		}
 	}
+
+	// Get current working directory.
+	currentDir, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+	}
+	ui.Message(fmt.Sprintf("Current directory: '%s'", currentDir))
+
+	// Create base directory to be used as workspace for artifact creation.
+	baseDir := strings.Join([]string{currentDir, "wim"}, "\\")
+	err = os.Mkdir(baseDir, 0777)
+	if err != nil {
+		log.Fatal(err)
+	}
+	ui.Message(fmt.Sprintf("Base directory for artifact created: '%s'", baseDir))
+
+	// Create temp mount directory. The directory will be created with random number suffix.
+	mountDir, err := os.MkdirTemp(currentDir, "mount_")
+	if err != nil {
+		log.Fatal(err)
+	}
+	ui.Message(fmt.Sprintf("Mount directory created: '%s'", mountDir))
+	//defer os.RemoveAll(mountDir)
 
 	// Final return.
 	return newArtifact, keep, mustKeep, err
