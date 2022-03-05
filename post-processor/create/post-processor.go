@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -98,6 +99,30 @@ func (pp PostProcessor) PostProcess(context context.Context, ui packer.Ui, baseA
 	}
 	ui.Message(fmt.Sprintf("Mount directory created: '%s'", mountDir))
 	//defer os.RemoveAll(mountDir)
+
+	// Mount VHDX image to mount directory.
+	err = exec.CommandContext(context, "cmd", "/c", "dism", "/mount-image", strings.Join([]string{"/imagefile", source}, ":"), "/Index:1", strings.Join([]string{"/mountdir", mountDir}, ":")).Run()
+	if err != nil {
+		ui.Message(fmt.Sprintf("Unable to mount image %s to mount dir: %s", source, mountDir))
+		log.Fatal(err)
+	}
+	ui.Message(fmt.Sprintf("VHDX Image %s successfully mounted to: '%s'", source, mountDir))
+
+	// Simple listing of files in mount directory just for test.
+	out, err := exec.Command("cmd", "/c", "dir", mountDir).CombinedOutput()
+	if err != nil {
+		log.Fatal(err)
+	} else {
+		ui.Message(fmt.Sprintf("%s", out))
+	}
+
+	// Unmount VHDX image from mount directory if eveyrthing went well.
+	err = exec.CommandContext(context, "cmd", "/c", "dism", "/Unmount-image", strings.Join([]string{"/mountdir", mountDir}, ":"), "/Discard").Run()
+	if err != nil {
+		ui.Message(fmt.Sprintf("Failed to unmount image %s from mount dir: %s", source, mountDir))
+		log.Fatal(err)
+	}
+	ui.Message(fmt.Sprintf("VHDX Image %s successfully unmounted from: '%s'", source, mountDir))
 
 	// Final return.
 	return newArtifact, keep, mustKeep, err
