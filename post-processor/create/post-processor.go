@@ -84,9 +84,9 @@ func (pp PostProcessor) PostProcess(context context.Context, ui packer.Ui, baseA
 	}
 	ui.Message(fmt.Sprintf("Current directory: '%s'", currentDir))
 
-	// Create base directory to be used as workspace for artifact creation.
+	// Create base directory to be used as workspace for artifact creation. If directory already exist the conntent will be overwriten with new artifact
 	baseDir := strings.Join([]string{currentDir, "wim"}, "\\")
-	err = os.Mkdir(baseDir, 0777)
+	err = os.MkdirAll(baseDir, 0777)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -98,7 +98,7 @@ func (pp PostProcessor) PostProcess(context context.Context, ui packer.Ui, baseA
 		log.Fatal(err)
 	}
 	ui.Message(fmt.Sprintf("Mount directory created: '%s'", mountDir))
-	//defer os.RemoveAll(mountDir)
+	defer os.RemoveAll(mountDir)
 
 	// Mount VHDX image to mount directory.
 	err = exec.CommandContext(context, "cmd", "/c", "dism", "/mount-image", strings.Join([]string{"/imagefile", source}, ":"), "/Index:1", strings.Join([]string{"/mountdir", mountDir}, ":")).Run()
