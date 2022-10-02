@@ -31,5 +31,6 @@ func (w *WimArtifact) State(name string) interface{} {
 }
 
 func (w *WimArtifact) Destroy() error {
-	return os.Remove(w.Path)
+	os.Remove(w.Path)
+	return nil
 }
