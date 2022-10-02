@@ -24,7 +24,8 @@
         {
             "type": "wim",
             "image_name": "test-image",
-            "image_description": "This is a test description"
+            "image_description": "This is a test description",
+            "image_compression": "ultra"
         }
     ]
 }

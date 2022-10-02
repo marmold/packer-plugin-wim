@@ -62,7 +62,20 @@ func (pp *PostProcessor) Configure(raws ...interface{}) error {
 	return nil
 }
 
-func (pp PostProcessor) PostProcess(context context.Context, ui packer.Ui, baseArtifact packer.Artifact) (newArtifact packer.Artifact, keep, mustKeep bool, err error) {
+func (pp PostProcessor) PostProcess(context context.Context, ui packer.Ui, baseArtifact packer.Artifact) (packer.Artifact, bool, bool, error) {
+
+	// Get current working directory.
+	currentDir, err := os.Getwd()
+	if err != nil {
+		return nil, false, false, fmt.Errorf("Unabel to get current working directory path")
+	}
+	ui.Message(fmt.Sprintf("Current directory: '%s'", currentDir))
+
+	// Declare new final artifact
+	newArtifact := &WimArtifact{
+		Path: strings.Join([]string{currentDir, "wim"}, "\\"),
+		Name: pp.config.ImageName,
+	}
 
 	// Check if the source file is VHDX (VHD also?) format.
 	source := ""
@@ -77,23 +90,16 @@ func (pp PostProcessor) PostProcess(context context.Context, ui packer.Ui, baseA
 		}
 	}
 
-	// Get current working directory.
-	currentDir, err := os.Getwd()
+	// Create base directory to be used as workspace for artifact creation.
+	// Should the directory be ereased with all content within?
+	err = os.MkdirAll(newArtifact.Path, 0777)
 	if err != nil {
-		log.Fatal(err)
+		return nil, false, false, fmt.Errorf("Unable to create final directory for opeartions: '%s'.", newArtifact.Path)
 	}
-	ui.Message(fmt.Sprintf("Current directory: '%s'", currentDir))
-
-	// Create base directory to be used as workspace for artifact creation. If directory already exist the conntent will be overwriten with new artifact
-	baseDir := strings.Join([]string{currentDir, "wim"}, "\\")
-	err = os.MkdirAll(baseDir, 0777)
-	if err != nil {
-		log.Fatal(err)
-	}
-	ui.Message(fmt.Sprintf("Base directory for artifact created: '%s'", baseDir))
+	ui.Message(fmt.Sprintf("Base directory for artifact created: '%s'", newArtifact.Path))
 
 	// Create temp mount directory. The directory will be created with random number suffix.
-	mountDir, err := os.MkdirTemp(baseDir, "mount_")
+	mountDir, err := os.MkdirTemp(newArtifact.Path, "mount_")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -103,30 +109,32 @@ func (pp PostProcessor) PostProcess(context context.Context, ui packer.Ui, baseA
 	// Mount VHDX image to mount directory.
 	err = exec.CommandContext(context, "cmd", "/c", "dism", "/mount-image", strings.Join([]string{"/imagefile", source}, ":"), "/Index:1", strings.Join([]string{"/mountdir", mountDir}, ":")).Run()
 	if err != nil {
-		ui.Message(fmt.Sprintf("Unable to mount image %s to mount dir: %s", source, mountDir))
-		log.Fatal(err)
+		//ui.Message(fmt.Sprintf("Unable to mount image %s to mount dir: %s", source, mountDir))
+		return nil, false, false, fmt.Errorf("Unable to mount image %s to mount dir: %s", source, mountDir)
 	}
 	ui.Message(fmt.Sprintf("VHDX Image %s successfully mounted to: '%s'", source, mountDir))
 
-	// Simple listing of files in mount directory just for test.
-	out, err := exec.Command("cmd", "/c", "dir", mountDir).CombinedOutput()
+	// Create WIM image from mounted directory.
+	wimPath := newArtifact.Path + "\\" + newArtifact.Name + ".wim"
+	ui.Message(fmt.Sprintf("Creating new WIM image under %s", wimPath))
+	err = exec.CommandContext(context, "cmd", "/c", "dism", "/Capture-Image", strings.Join([]string{"/ImageFile", wimPath}, ":"), strings.Join([]string{"/CaptureDir", mountDir}, ":"), strings.Join([]string{"/Name", "Test"}, ":")).Run()
 	if err != nil {
-		log.Fatal(err)
-	} else {
-		ui.Message(fmt.Sprintf("%s", out))
+		//ui.Message(fmt.Sprintf("Failed to create WIM image from mount dir: %s. Unmounting ...", mountDir))
+		exec.Command("cmd", "/c", "dism", "/Unmount-image", strings.Join([]string{"/mountdir", mountDir}, ":"), "/Discard").Run()
+		return nil, false, false, fmt.Errorf("Failed to create WIM image from mount dir: %s. Unmounting ...", mountDir)
 	}
+	ui.Message(fmt.Sprintf("WIM Image %s successfully created from: '%s'", wimPath, mountDir))
 
 	// Unmount VHDX image from mount directory if eveyrthing went well.
 	err = exec.CommandContext(context, "cmd", "/c", "dism", "/Unmount-image", strings.Join([]string{"/mountdir", mountDir}, ":"), "/Discard").Run()
 	if err != nil {
 		ui.Message(fmt.Sprintf("Failed to unmount image %s from mount dir: %s", source, mountDir))
-		log.Fatal(err)
+		// log.Fatal(err)
+		return nil, false, false, err
 	}
 	ui.Message(fmt.Sprintf("VHDX Image %s successfully unmounted from: '%s'", source, mountDir))
 
-	// Declare new final artifact
-	newArtifact = &WimArtifact{Path: baseDir, Name: pp.config.ImageName}
-
 	// Final return.
-	return newArtifact, keep, mustKeep, err
+	//TODO: Should we also add support for Keep and MustKeep paramter here? Currnetly both set to false.
+	return newArtifact, false, false, err
 }
