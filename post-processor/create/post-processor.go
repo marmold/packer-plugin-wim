@@ -1,21 +1,26 @@
 //go:generate packer-sdc mapstructure-to-hcl2 -type Config
 
-package wimcreate
+package create
 
 import (
 	"context"
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"strings"
 
 	"github.com/hashicorp/hcl/v2/hcldec"
 	"github.com/hashicorp/packer-plugin-sdk/common"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
 	"github.com/hashicorp/packer-plugin-sdk/template/config"
 	"github.com/hashicorp/packer-plugin-sdk/template/interpolate"
+	"github.com/powa458/packer-plugin-wim/post-processor/utils"
+	"github.com/powa458/packer-plugin-wim/post-processor/wim"
+)
+
+const (
+	qemuBuilderID   = "transcend.qemu"
+	hypervBuilderID = "MSOpenTech.hyperv"
 )
 
 type Config struct {
@@ -48,14 +53,14 @@ func (pp *PostProcessor) Configure(raws ...interface{}) error {
 		InterpolateContext: &pp.config.ctx,
 	}, raws...)
 
-	// If error occured then return it.
+	// If error occurred then return it.
 	if err != nil {
 		return err
 	}
 
 	// Set any defaults if needed.
 	if pp.config.ImageName == "" {
-		pp.config.ImageName = "test-wim-name"
+		pp.config.ImageName = "default"
 	}
 
 	// Return no errors if everything is good.
@@ -64,34 +69,33 @@ func (pp *PostProcessor) Configure(raws ...interface{}) error {
 
 func (pp PostProcessor) PostProcess(context context.Context, ui packer.Ui, baseArtifact packer.Artifact) (packer.Artifact, bool, bool, error) {
 
+	// Get BuilderId
+	bid := baseArtifact.BuilderId()
+
+	switch bid {
+	case qemuBuilderID, hypervBuilderID:
+		break
+	default:
+		err := fmt.Errorf("unsupported artifact type %q: this post-processor only supports "+
+			"artifacts from QEMU/Hyper-V builders.", bid)
+		return nil, false, false, err
+	}
+
 	// Get current working directory.
 	currentDir, err := os.Getwd()
 	if err != nil {
-		return nil, false, false, fmt.Errorf("Unabel to get current working directory path")
+		return nil, false, false, fmt.Errorf("Unable to get current working directory path")
 	}
 	ui.Message(fmt.Sprintf("Current directory: '%s'", currentDir))
 
 	// Declare new final artifact
-	newArtifact := &WimArtifact{
-		Path: strings.Join([]string{currentDir, "wim"}, "\\"),
+	newArtifact := &wim.WimArtifact{
+		Path: filepath.Join(currentDir, "wim"),
 		Name: pp.config.ImageName,
 	}
 
-	// Check if the source file is VHDX (VHD also?) format.
-	source := ""
-	for _, i := range baseArtifact.Files() {
-		if filepath.Ext(i) == ".vhdx" {
-			source = i
-			ui.Message(fmt.Sprintf("Found VHDX file: '%s'", source))
-			break
-		} else {
-			ui.Message(fmt.Sprintf("No VHDX file has been found"))
-			return nil, false, false, fmt.Errorf("No VHDX file has been found")
-		}
-	}
-
 	// Create base directory to be used as workspace for artifact creation.
-	// Should the directory be ereased with all content within?
+	// Should the directory be erased with all content within?
 	err = os.MkdirAll(newArtifact.Path, 0777)
 	if err != nil {
 		return nil, false, false, fmt.Errorf("Unable to create final directory for opeartions: '%s'.", newArtifact.Path)
@@ -104,37 +108,51 @@ func (pp PostProcessor) PostProcess(context context.Context, ui packer.Ui, baseA
 		log.Fatal(err)
 	}
 	ui.Message(fmt.Sprintf("Mount directory created: '%s'", mountDir))
+
+	// Defer removal of temp mount directory.
 	defer os.RemoveAll(mountDir)
 
-	// Mount VHDX image to mount directory.
-	err = exec.CommandContext(context, "cmd", "/c", "dism", "/mount-image", strings.Join([]string{"/imagefile", source}, ":"), "/Index:1", strings.Join([]string{"/mountdir", mountDir}, ":")).Run()
-	if err != nil {
-		//ui.Message(fmt.Sprintf("Unable to mount image %s to mount dir: %s", source, mountDir))
-		return nil, false, false, fmt.Errorf("Unable to mount image %s to mount dir: %s", source, mountDir)
-	}
-	ui.Message(fmt.Sprintf("VHDX Image %s successfully mounted to: '%s'", source, mountDir))
+	// Mount the VM image.
+	switch bid {
+	case hypervBuilderID:
 
-	// Create WIM image from mounted directory.
-	wimPath := newArtifact.Path + "\\" + newArtifact.Name + ".wim"
-	ui.Message(fmt.Sprintf("Creating new WIM image under %s", wimPath))
-	err = exec.CommandContext(context, "cmd", "/c", "dism", "/Capture-Image", strings.Join([]string{"/ImageFile", wimPath}, ":"), strings.Join([]string{"/CaptureDir", mountDir}, ":"), strings.Join([]string{"/Name", "Test"}, ":")).Run()
-	if err != nil {
-		//ui.Message(fmt.Sprintf("Failed to create WIM image from mount dir: %s. Unmounting ...", mountDir))
-		exec.Command("cmd", "/c", "dism", "/Unmount-image", strings.Join([]string{"/mountdir", mountDir}, ":"), "/Discard").Run()
-		return nil, false, false, fmt.Errorf("Failed to create WIM image from mount dir: %s. Unmounting ...", mountDir)
-	}
-	ui.Message(fmt.Sprintf("WIM Image %s successfully created from: '%s'", wimPath, mountDir))
+		// Find source image
+		source := ""
+		for _, i := range baseArtifact.Files() {
+			if filepath.Ext(i) == ".vhdx" || filepath.Ext(i) == ".vhd" {
+				source = i
+				ui.Message(fmt.Sprintf("Found VM image file: '%s'", source))
+				break
+			} else {
+				return nil, false, false, fmt.Errorf("No image file has been found")
+			}
+		}
 
-	// Unmount VHDX image from mount directory if eveyrthing went well.
-	err = exec.CommandContext(context, "cmd", "/c", "dism", "/Unmount-image", strings.Join([]string{"/mountdir", mountDir}, ":"), "/Discard").Run()
-	if err != nil {
-		ui.Message(fmt.Sprintf("Failed to unmount image %s from mount dir: %s", source, mountDir))
-		// log.Fatal(err)
-		return nil, false, false, err
-	}
-	ui.Message(fmt.Sprintf("VHDX Image %s successfully unmounted from: '%s'", source, mountDir))
+		// Mount image to directory
+		err = utils.MountImageVHD(context, source, mountDir)
+		if err != nil {
+			return nil, false, false, err
+		}
+		ui.Message(fmt.Sprintf("Image %s successfully mounted to: '%s'", source, mountDir))
 
-	// Final return.
-	//TODO: Should we also add support for Keep and MustKeep paramter here? Currnetly both set to false.
+		// Defer unmounting. We here set err variable to result of this action because this defer must be done always, in successful scenario and on error. With this, we can pass error to packer when unmount fail.
+		defer func(string) {
+			err = utils.UnmountImageVHD(mountDir)
+		}(mountDir)
+
+		// Create WIM image.
+		err = wim.CreateWimWindows(context, ui, mountDir, *newArtifact)
+		if err != nil {
+			return nil, false, false, err
+		}
+
+	case qemuBuilderID:
+		return nil, false, false, fmt.Errorf("NOT YET IMPLEMENTED")
+	}
+
+	/* Final return.
+	TODO: Should we also add support for Keep and MustKeep parameter here? Currently both set to false.
+	We use err value here and not nil because we got unmounting in defer that return only error value as it is done right before close of program.
+	*/
 	return newArtifact, false, false, err
 }
