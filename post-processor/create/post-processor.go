@@ -30,7 +30,7 @@ type Config struct {
 	// Paramters specific to this post processor.
 	// Those paramters names should start from capital leter.
 	// Only such properties are exported to other packages then local scope.
-	ImageName        string `mapstructure:"name required:"true""`
+	ImageName        string `mapstructure:"name" required:"true"`
 	ImageDescription string `mapstructure:"description"`
 	ImageCompression uint32 `mapstructure:"compression" required:"true"`
 
