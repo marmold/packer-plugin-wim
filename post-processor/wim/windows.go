@@ -69,7 +69,7 @@ func CreateWimWindows(context context.Context, ui packer.Ui, mountDir string, ne
 
 		// Create WIM C struct
 		var wim *C.WIMStruct
-		val := C.wimlib_create_new_wim(1, &wim) // Use here only 1 or 2 as compression type as 3 wont be supported by DISM at the time of applying image.
+		val := C.wimlib_create_new_wim(newArtifact.Compression, &wim) // Use here only 1 or 2 as compression type as 3 wont be supported by DISM at the time of applying image.
 		if val != 0 {
 			errChannel <- fmt.Errorf("Unable to create wim struct using wimlib_create_new_wim C function. Error: %d", val)
 			return
@@ -91,7 +91,7 @@ func CreateWimWindows(context context.Context, ui packer.Ui, mountDir string, ne
 			return
 		}
 
-		wimPath := filepath.Join(newArtifact.Path, newArtifact.Name+"wim")
+		wimPath := filepath.Join(newArtifact.Path, newArtifact.Name+".wim")
 		// wimPath := newArtifact.Path + "\\" + newArtifact.Name + ".wim"
 		ui.Message(fmt.Sprintf("Successfully added sources to wim struct. Writing WIM to '%s'", wimPath))
 
