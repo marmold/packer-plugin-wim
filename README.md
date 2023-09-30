@@ -8,15 +8,13 @@ This project use cgo and C under the hood to create WIM images for cross platfor
 
 ## Build
 
-To build the plugin you need a gcc compiler and go runtime +1.17. 
+To build the plugin you need a gcc compiler. go runtime +1.17 and wimlib files.
 
-To be able to build the plugin on Windows, install GCC compiler, for example  https://jmeubank.github.io/tdm-gcc/download/. For go, follow official instructions.
-
-Run `go build -x ./main.go`. For additional important information check below.
+To be able to build the plugin on Windows, install GCC compiler, for example  https://jmeubank.github.io/tdm-gcc/download/. For Go, follow official instructions. Download wimlib from https://wimlib.net/downloads. Extract libwim.lib and wimlib.h from archive to .\lib\devel directory. Run `go build -x ./main.go`. For additional important information check below.
 
 ## Important notes
 
-- To use this plugin on Windows, a required DLL file from wimlib is necessary called libwim-15.dll. It can be found in wimlib archive for Windows runtime: https://wimlib.net/downloads/wimlib-1.14.3-windows-x86_64-bin.zip. In future it will be provided with plugin in correct ZIP archive to work without any additional actions but for now it must be included in one of those paths:
+- To use this plugin on Windows, a required DLL file from wimlib is necessary called libwim-15.dll. It can be found in wimlib archive for Windows runtime: https://wimlib.net/downloads. In future it will be provided with plugin in correct ZIP archive to work without any additional actions but for now it must be included in one of those paths:
     1) The directory of the executable file being called.
     2) The current working directory from which the executable was called.
     3) The %SystemRoot%\SYSTEM32 directory.
