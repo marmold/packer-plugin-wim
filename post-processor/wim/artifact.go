@@ -1,10 +1,11 @@
-package wimcreate
+package wim
 
 import (
 	"fmt"
 	"os"
 )
 
+// Internal implementation for packer.Artifact interface.
 type WimArtifact struct {
 	Name string
 	Path string
