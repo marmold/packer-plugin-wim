@@ -1,0 +1,52 @@
+name: build_windows
+
+on:
+  pull_request_target:
+    types:
+      - opened
+    branches:
+      - "main"
+      - "releases/**"
+
+jobs:
+  Build:
+    runs-on: windows-latest
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@v4
+      - name: "Checkout wimlib repository"
+        uses: actions/checkout@v4
+        with:
+          repository: ebiggers/wimlib
+          path: './wimlib'
+          submodules: true
+      - name: "Setup MYSYS2 for wimlib build"
+        uses: msys2/setup-msys2@v2
+      - name: "Configure MYSYS2"
+        shell: powershell
+        run: msys2 -c 'pacman -Syu --noconfir --needed base-devel mingw-w64-i686-toolchain mingw-w64-x86_64-toolchain'
+      - name: "Build wimlib binaries for windows x64"
+        shell: powershell
+        run: msys2 -c './wimlib/tools/windows-build.sh --install-prerequisites'
+      - name: "Copy required files to related locations"
+        shell: powershell
+        run: |
+          New-Item -Type Directory -Path ./lib/devel
+          gci -Recurse -Path ./wimlib -Include libwim.lib | cp -Destination ./lib/devel
+          gci -Recurse -Path ./wimlib -Include wimlib.h | cp -Destination ./lib/devel
+          New-Item -Type Directory -Path ./out
+          gci -Recurse -Path ./wimlib -Include libwim-15.dll | cp -Destination ./out
+      - name: "Setup Go runtime"
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+      - name: "Build plugin binary"
+        shell: powershell
+        run: |
+          go get .
+          go build -x -o ./out/packer-plugin-wim.exe .
+      - name: "Compress and upload the package"
+        uses: actions/upload-artifact@v3
+        with:
+          name: packer-plugin-wim.zip
+          path: ./out/*
