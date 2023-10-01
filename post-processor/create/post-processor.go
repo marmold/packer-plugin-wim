@@ -30,9 +30,9 @@ type Config struct {
 	// Paramters specific to this post processor.
 	// Those paramters names should start from capital leter.
 	// Only such properties are exported to other packages then local scope.
-	ImageName        string `mapstructure:"image_name"`
-	ImagePath        string `mapstructure:"image_path"`
-	ImageDescription string `mapstructure:"image_description"`
+	ImageName        string `mapstructure:"name" required:"true"`
+	ImageDescription string `mapstructure:"description"`
+	ImageCompression uint32 `mapstructure:"compression" required:"true"`
 
 	ctx interpolate.Context
 }
@@ -58,9 +58,13 @@ func (pp *PostProcessor) Configure(raws ...interface{}) error {
 		return err
 	}
 
-	// Set any defaults if needed.
+	// Set any defaults if needed or validate.
 	if pp.config.ImageName == "" {
 		pp.config.ImageName = "default"
+	}
+
+	if pp.config.ImageCompression > 3 {
+		return fmt.Errorf("Unsupported value for property 'compression': %d. Available values: 0 = None, 1 = XPRESS, 2 = LZX, 3 = LZMS.", pp.config.ImageCompression)
 	}
 
 	// Return no errors if everything is good.
@@ -90,8 +94,9 @@ func (pp PostProcessor) PostProcess(context context.Context, ui packer.Ui, baseA
 
 	// Declare new final artifact
 	newArtifact := &wim.WimArtifact{
-		Path: filepath.Join(currentDir, "wim"),
-		Name: pp.config.ImageName,
+		Path:        filepath.Join(currentDir, "wim"),
+		Name:        pp.config.ImageName,
+		Compression: pp.config.ImageCompression,
 	}
 
 	// Create base directory to be used as workspace for artifact creation.

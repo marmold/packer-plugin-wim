@@ -25,7 +25,8 @@
     "post-processors": [
         {
             "type": "wim",
-            "image_name": "test-wim"
+            "image_name": "test-wim",
+            "compression": 1
         }
     ]
 }

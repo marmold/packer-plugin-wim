@@ -7,12 +7,13 @@ import (
 
 // Internal implementation for packer.Artifact interface.
 type WimArtifact struct {
-	Name string
-	Path string
+	Name        string
+	Path        string // Used internally. This setting cant be set via JSON.
+	Compression uint32
 }
 
 func (w *WimArtifact) BuilderId() string {
-	return "packer.post-processor.wimcreate"
+	return "packer.post-processor.wim"
 }
 
 func (w *WimArtifact) Id() string {
