@@ -43,7 +43,7 @@ runs:
         go get .
         go build -x -o ./out/packer-plugin-wim-windows-${{ inputs.GOARCH }} .
     - name: "Compress and upload the package"
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v3
       with:
         name: packer-plugin-wim-windows-${{ inputs.GOARCH }}.zip
         path: ./out/*
