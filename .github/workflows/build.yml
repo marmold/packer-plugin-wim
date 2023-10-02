@@ -1,4 +1,4 @@
-name: build_plugin_binaries
+name: build
 permissions:
   contents: read
 on:
