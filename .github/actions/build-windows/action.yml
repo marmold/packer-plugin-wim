@@ -41,7 +41,7 @@ runs:
       run: |
         $env:GOARCH = "${{ inputs.GOARCH }}"
         go get .
-        go build -x -o ./out/packer-plugin-wim-windows-${{ inputs.GOARCH }} .
+        go build -x -o ./out/packer-plugin-wim-windows-${{ inputs.GOARCH }}.exe .
     - name: "Compress and upload the package"
       uses: actions/upload-artifact@v3
       with:
