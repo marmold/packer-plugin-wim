@@ -1,0 +1,15 @@
+name: build_plugin_binaries
+permissions:
+  contents: read
+on:
+  push:
+    branches:
+    - main
+jobs:
+  build_windows:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: "./.github/actions/build-windows"
+      with:
+        GOARCH: amd64
