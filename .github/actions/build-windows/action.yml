@@ -55,8 +55,6 @@ runs:
         path: ./out/*
         retention-days: 30
       if: "${{ github.event.inputs.RELEASE == '' }}"
-    - name: Set env
-      run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
     - name: Create archive
       uses: thedoctor0/zip-release@0.7.1
       with:
