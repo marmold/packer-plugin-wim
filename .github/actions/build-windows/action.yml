@@ -4,6 +4,12 @@ inputs:
   GOARCH:
     required: true
     description:  "Architecure for which binary should be build"
+  RELEASE:
+    required: false
+    description:  "Optional - release url in order to which artifact should be uploaded"
+  TOKEN:
+    required: false
+    description:  "Optional - token to be used on repo actions"
 
 runs:
   using: composite
@@ -41,10 +47,27 @@ runs:
       run: |
         $env:GOARCH = "${{ inputs.GOARCH }}"
         go get .
-        go build -x -o ./out/packer-plugin-wim-windows-${{ inputs.GOARCH }}.exe .
-    - name: "Compress and upload the package"
+        go build -x -o ./out/packer-plugin-wim_windows_${{ inputs.GOARCH }}.exe .
+    - name: "Upload the package"
       uses: actions/upload-artifact@v3
       with:
-        name: packer-plugin-wim-windows-${{ inputs.GOARCH }}.zip
+        name: packer-plugin-wim_windows_${{ inputs.GOARCH }}
         path: ./out/*
         retention-days: 30
+      if: "${{ github.event.inputs.RELEASE == '' }}"
+    - name: Set env
+      run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+    - name: Create archive
+      uses: thedoctor0/zip-release@0.7.1
+      with:
+        type: 'zip'
+        direcctory: ./out/*
+        filename: 'packer-plugin-wim_windows_${{ github.ref }}_${{ inputs.GOARCH }}'
+    - name: Release actions
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ inputs.TOKEN }}
+      with:
+        upload_url: ${{ inputs.RELEASE}}
+        asset_name: packer-plugin-wim_windows_${{ github.ref }}_${{ inputs.GOARCH }}'
+        asset_content_type: application/zip
