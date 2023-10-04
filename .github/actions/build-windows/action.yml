@@ -54,7 +54,7 @@ runs:
         name: packer-plugin-wim_windows_${{ inputs.GOARCH }}
         path: ./out/*
         retention-days: 30
-      if: "${{ github.event.inputs.RELEASE == '' }}"
+      if: "${{ github.event.inputs.RELEASE != '' }}"
     - name: Create archive
       uses: thedoctor0/zip-release@0.7.1
       with:
