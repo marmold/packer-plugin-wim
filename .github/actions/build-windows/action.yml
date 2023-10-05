@@ -54,14 +54,15 @@ runs:
         name: packer-plugin-wim_windows_${{ inputs.GOARCH }}
         path: ./out/*
         retention-days: 30
-      if: "${{ github.event.inputs.RELEASE != '' }}"
-    - name: Create archive
+    - if: "${{ github.event.inputs.RELEASE != '' }}"
+      name: Create archive
       uses: thedoctor0/zip-release@0.7.1
       with:
         type: 'zip'
         direcctory: ./out/*
         filename: 'packer-plugin-wim_windows_${{ github.ref }}_${{ inputs.GOARCH }}'
-    - name: Release actions
+    - if: "${{ github.event.inputs.RELEASE != '' }}"
+      name: Release actions
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ inputs.TOKEN }}
