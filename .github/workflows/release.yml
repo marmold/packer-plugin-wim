@@ -27,7 +27,7 @@ jobs:
           prerelease: false
 
   build-and-release:
-    uses: octo-org/example-repo/.github/workflows/build.yml@main
+    uses: "./.github/actions/build-windows.yml"
     with:
       release-url: ${{ create-release.outputs.upload_url }}
     secrets:
