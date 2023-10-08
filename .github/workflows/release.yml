@@ -1,13 +1,14 @@
 name: release
 
+permissions:
+  contents: write
+  packages: read
+
 on:
   push:
     tags:
       - 'v*'
-
-permissions:
-  contents: write
-  packages: read
+  workflow_dispatch:
 
 jobs:
   create-release:
