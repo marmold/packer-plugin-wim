@@ -1,11 +1,22 @@
 name: build
+
 permissions:
   contents: read
+
 on:
   push:
     branches:
     - main
   workflow_dispatch:
+  workflow_call:
+    inputs:
+      release-url:
+        required: false
+        type: string
+    secrets:
+      token:
+        required: false
+
 jobs:
   build_windows:
     runs-on: windows-latest
@@ -14,3 +25,6 @@ jobs:
     - uses: "./.github/actions/build-windows"
       with:
         GOARCH: amd64
+        RELEASE: ${{ inputs.release-url }}
+        TOKEN: ${{ secrets.token }}
+
