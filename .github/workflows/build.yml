@@ -18,6 +18,7 @@ jobs:
         arch: ["amd64", "386"]
     runs-on: windows-latest
     steps:
+    - uses: actions/checkout@v4
     - uses: "./.github/actions/build-windows"
       with:
         GOARCH: ${{ matrix.arch }}"
