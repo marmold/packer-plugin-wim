@@ -21,4 +21,4 @@ jobs:
     - uses: actions/checkout@v4
     - uses: "./.github/actions/build-windows"
       with:
-        GOARCH: ${{ matrix.arch }}"
+        GOARCH: ${{ matrix.arch }}
