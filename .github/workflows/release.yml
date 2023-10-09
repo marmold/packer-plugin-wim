@@ -4,7 +4,6 @@ permissions:
   contents: write
   packages: read
 
-
 on:
   push:
     tags:
@@ -24,7 +23,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           path: artifacts
-
+          
       - name: List artifacts
         shell: bash
         run: ls -la artifacts
