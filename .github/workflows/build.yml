@@ -15,7 +15,7 @@ jobs:
   build_windows:
     strategy:
       matrix:
-        arch: ["amd64", "386"]
+        arch: ["amd64"]
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v4
