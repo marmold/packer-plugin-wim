@@ -30,6 +30,6 @@ jobs:
   build-and-release:
     uses: "./.github/workflows/build.yml"
     with:
-      release-url: ${{ create-release.outputs.upload_url }}
+      release-url: ${{ needs.create-release.outputs.upload_url }}
     secrets:
       token: ${{ secrets.GITHUB_TOKEN }}
