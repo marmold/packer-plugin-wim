@@ -16,16 +16,8 @@ runs:
         repository: ebiggers/wimlib
         path: './wimlib'
         submodules: true
-    - if: ${{ inputs.GOARCH }}) == "amd64"
-      name: "Setup MYSYS2 WINGW64 for wimlib build"
+    - name: "Setup MYSYS2 for wimlib build"
       uses: msys2/setup-msys2@v2
-      with:
-        msystem: MINGW64
-    - if: ${{ inputs.GOARCH }}) == "386"
-      name: "Setup MYSYS2 MINGW32 for wimlib build"
-      uses: msys2/setup-msys2@v2
-      with:
-        msystem: MINGW32
     - name: "Configure MYSYS2"
       shell: powershell
       run: msys2 -c 'pacman -Syu --noconfir --needed base-devel mingw-w64-i686-toolchain mingw-w64-x86_64-toolchain'
