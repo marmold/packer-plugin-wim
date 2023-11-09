@@ -10,20 +10,25 @@ runs:
   steps:
     - name: "Checkout repository"
       uses: actions/checkout@v4
+    
     - name: "Checkout wimlib repository"
       uses: actions/checkout@v4
       with:
         repository: ebiggers/wimlib
         path: './wimlib'
         submodules: true
+    
     - name: "Setup MYSYS2 for wimlib build"
       uses: msys2/setup-msys2@v2
+    
     - name: "Configure MYSYS2"
       shell: powershell
       run: msys2 -c 'pacman -Syu --noconfir --needed base-devel mingw-w64-i686-toolchain mingw-w64-x86_64-toolchain'
+    
     - name: "Build wimlib binaries for windows x64"
       shell: powershell
       run: msys2 -c './wimlib/tools/windows-build.sh --install-prerequisites'
+    
     - name: "Copy required files to related locations"
       shell: powershell
       run: |
@@ -32,26 +37,36 @@ runs:
         gci -Recurse -Path ./wimlib -Include wimlib.h | cp -Destination ./lib/devel
         New-Item -Type Directory -Path ./out
         gci -Recurse -Path ./wimlib -Include libwim-15.dll | cp -Destination ./out
+    
     - name: "Setup Go runtime"
       uses: actions/setup-go@v4
       with:
         go-version: '1.21'
+    
     - name: "Build plugin binary"
       shell: powershell
       run: |
         $env:GOARCH = "${{ inputs.GOARCH }}"
         go get .
         go build -x -o ./out/packer-plugin-wim_windows_${{ inputs.GOARCH }}.exe .
+
     - if: startsWith(github.ref, 'refs/tags/v') == true
-      name: "Upload the package with tag"
-      uses: actions/upload-artifact@v3
-      with:
-        name: packer-plugin-wim_${{ github.ref_name }}_windows_${{ inputs.GOARCH }}.zip
-        path: ./out/*
+      shell: powershell
+      run: Write-Output "artifactName=packer-plugin-wim_${{ github.ref_name }}_windows_${{ inputs.GOARCH }}" >> $GITHUB_ENV
+
     - if: startsWith(github.ref, 'refs/tags/v') != true
-      name: "Upload the package"
+      shell: powershell
+      run: Write-Output "artifactName=packer-plugin-wim_windows_${{ inputs.GOARCH }}" >> $GITHUB_ENV
+
+    - name: "Create Archive"
+      shell: powershell
+      run: |
+        Compress-Archive -Path ./out/* -DestinationPath ./out/${{ env.artifactName }}.zip -CompressionLevel Optimal
+        Remove-item -Recurse -Exclude *.zip
+    
+    - name: "Upload the archive"
       uses: actions/upload-artifact@v3
       with:
-        name: packer-plugin-wim_windows_${{ inputs.GOARCH }}.zip
+        name: ${{ env.artifactName }}
         path: ./out/*
         retention-days: 15
