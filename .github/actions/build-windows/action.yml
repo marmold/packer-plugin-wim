@@ -52,11 +52,11 @@ runs:
 
     - if: startsWith(github.ref, 'refs/tags/v') == true
       shell: powershell
-      run: Write-Output "artifactName=packer-plugin-wim_${{ github.ref_name }}_windows_${{ inputs.GOARCH }}" >> $GITHUB_ENV
+      run: Add-Content -Value "artifactName=packer-plugin-wim_${{ github.ref_name }}_windows_${{ inputs.GOARCH }}" -Path "$GITHUB_ENV"
 
     - if: startsWith(github.ref, 'refs/tags/v') != true
       shell: powershell
-      run: Write-Output "artifactName=packer-plugin-wim_windows_${{ inputs.GOARCH }}" >> $GITHUB_ENV
+      run: Add-Content -Value "artifactName=packer-plugin-wim_windows_${{ inputs.GOARCH }}" -Path "$GITHUB_ENV"
 
     - name: "Create Archive"
       shell: powershell
