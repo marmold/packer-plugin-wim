@@ -62,7 +62,7 @@ runs:
       shell: powershell
       run: |
         Compress-Archive -Path ./out/* -DestinationPath ./out/${{ env.artifactName }}.zip -CompressionLevel Optimal
-        Remove-item -Recurse -Exclude *.zip
+        Remove-item -Path ./out/* -Recurse -Exclude *.zip
     
     - name: "Upload the archive"
       uses: actions/upload-artifact@v3
