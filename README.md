@@ -10,7 +10,7 @@ This project use cgo and C under the hood to create WIM images for cross platfor
 
 Currently to use the plugin with packer you need to either download latest release binary from: https://github.com/marmold/packer-plugin-wim/releases or build it from sources.
 
-To enable plugin in packer make sure the plugin is placed under $env:PACKER_PLUGIN_PATH if configured or in default directory path for plugins. For more information check: https://developer.hashicorp.com/packer/docs/plugins/install-plugins.
+To enable plugin in packer make sure the plugin is placed under `$env:PACKER_PLUGIN_PATH` if configured or in default directory path for plugins. For more information check: https://developer.hashicorp.com/packer/docs/plugins/install-plugins.
 
 ## Build
 
@@ -22,7 +22,7 @@ To be able to build the plugin on Windows, install GCC compiler, for example  ht
 
 ## Important notes
 
-- To use this plugin on Windows, a required DLL file from wimlib is necessary called libwim-15.dll. It can be found in wimlib archive for Windows runtime: https://wimlib.net/downloads. In future it will be provided with plugin in correct ZIP archive to work without any additional actions but for now it must be included in one of those paths:
+- To use this plugin on Windows, a required DLL file from wimlib is necessary called libwim-15.dll. It can be found in wimlib archive for Windows runtime: https://wimlib.net/downloads. This DLL is part of archive in released artifacts so its ready to go bundle. If you build plugin from sources then you need to make sure to have this library correctly placed in one of those paths:
     1. The directory of the executable file being called.
     2. The current working directory from which the executable was called.
     3. The %SystemRoot%\SYSTEM32 directory.
