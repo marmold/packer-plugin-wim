@@ -6,11 +6,19 @@ A packer plugin to support creation of WIM image from VHD/VHDx files. Main goal 
 
 This project use cgo and C under the hood to create WIM images for cross platform and better performance.
 
+## Installation
+
+Currently to use the plugin with packer you need to either download latest release binary from: https://github.com/marmold/packer-plugin-wim/releases or build it from sources.
+
+To enable plugin in packer make sure the plugin is placed under $env:PACKER_PLUGIN_PATH if configured or in default directory path for plugins. For more information check: https://developer.hashicorp.com/packer/docs/plugins/install-plugins.
+
 ## Build
+
+### Windows
 
 To build the plugin you need a gcc compiler. go runtime +1.17 and wimlib files.
 
-To be able to build the plugin on Windows, install GCC compiler, for example  https://jmeubank.github.io/tdm-gcc/download/. For Go, follow official instructions. Download wimlib from https://wimlib.net/downloads. Extract libwim.lib and wimlib.h from archive to .\lib\devel directory as this directory is linked in cgo. Run `go build -x ./main.go`. For additional important information check below.
+To be able to build the plugin on Windows, install GCC compiler, for example  https://jmeubank.github.io/tdm-gcc/download/. For Go, follow official instructions. Download wimlib from https://wimlib.net/downloads or compile it from sources. Make sure to place libwim.lib and wimlib.h to .\lib\devel directory as this directory is linked in cgo. Run `go build -x -o ./out/packer-plugin-wim.exe .`. For additional important information check below.
 
 ## Important notes
 
