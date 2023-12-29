@@ -32,11 +32,11 @@ runs:
     - name: "Copy required files to related locations"
       shell: powershell
       run: |
-        New-Item -Type Directory -Path ./lib/devel
-        gci -Recurse -Path ./wimlib -Include libwim.lib | cp -Destination ./lib/devel
-        gci -Recurse -Path ./wimlib -Include wimlib.h | cp -Destination ./lib/devel
-        New-Item -Type Directory -Path ./out
-        gci -Recurse -Path ./wimlib -Include libwim-15.dll | cp -Destination ./out
+        $ld = New-Item -Type Directory -Path ./.lib/devel
+        gci -Recurse -Path ./wimlib -Include libwim.lib | cp -Destination $ld
+        gci -Recurse -Path ./wimlib -Include wimlib.h | cp -Destination $ld
+        $od = New-Item -Type Directory -Path ./out
+        gci -Recurse -Path ./wimlib -Include libwim-15.dll | cp -Destination $od
     
     - name: "Setup Go runtime"
       uses: actions/setup-go@v4
