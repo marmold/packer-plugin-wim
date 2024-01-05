@@ -18,7 +18,7 @@ To enable plugin in packer make sure the plugin is placed under `$env:PACKER_PLU
 
 To build the plugin you need a gcc compiler, go runtime +1.17 and wimlib files.
 
-To be able to build the plugin on Windows, install GCC compiler that suit you the most, for example  https://jmeubank.github.io/tdm-gcc/download/. For Go, follow official instructions. Download wimlib from https://wimlib.net/downloads or compile it from sources. Make sure to place `libwim-15.dll` in `\.out` directory and `libwim.lib`, `wimlib.h` to `.\.lib\devel` directory as this directory is linked in cgo. Run `go build -x -o ./.out/packer-plugin-wim.exe .` from root directory of repository. For additional important information check below.
+To be able to build the plugin on Windows, install GCC compiler that suit you the most, for example  https://jmeubank.github.io/tdm-gcc/download/. For Go, follow official instructions. Download wimlib from https://wimlib.net/downloads or compile it from sources. Make sure to place `libwim-15.dll` in `\.out` directory and `libwim.lib`, `wimlib.h` to `.\.lib\devel` directory as this directory is linked in cgo. Run `go build -x -o .\.out\packer-plugin-wim.exe .` from root directory of repository. For additional important information check below.
 
 ## Important notes
 
