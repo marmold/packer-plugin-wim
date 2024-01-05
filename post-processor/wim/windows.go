@@ -1,8 +1,8 @@
 package wim
 
 /*
-#cgo LDFLAGS: -L../../lib/devel -llibwim -Wl,-rpath=../../lib/devel
-#include "../../lib/devel/wimlib.h"
+#cgo LDFLAGS: -L../../.lib/devel -llibwim -Wl,-rpath=../../.lib/devel
+#include "../../.lib/devel/wimlib.h"
 #include <stdlib.h>
 */
 import "C"
