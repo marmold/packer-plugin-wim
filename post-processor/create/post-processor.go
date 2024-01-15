@@ -27,8 +27,8 @@ type Config struct {
 	// Main packer paramters from common module.
 	common.PackerConfig `mapstructure:",squash"`
 
-	// Paramters specific to this post processor.
-	// Those paramters names should start from capital leter.
+	// Parameters specific to this post processor.
+	// Those Parameters names should start from capital later.
 	// Only such properties are exported to other packages then local scope.
 	ImageName        string `mapstructure:"image_name" required:"false"`
 	ImagePath        string `mapstructure:"image_path" required:"false"`
