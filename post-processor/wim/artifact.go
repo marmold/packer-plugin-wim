@@ -8,7 +8,7 @@ import (
 // Internal implementation for packer.Artifact interface.
 type WimArtifact struct {
 	Name        string
-	Path        string // Used internally. This setting cant be set via JSON.
+	Path        string
 	Compression uint32
 }
 
