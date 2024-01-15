@@ -20,6 +20,14 @@ To build the plugin you need a gcc compiler, go runtime +1.17 and wimlib files.
 
 To be able to build the plugin on Windows, install GCC compiler that suit you the most, for example  https://jmeubank.github.io/tdm-gcc/download/. For Go, follow official instructions. Download wimlib from https://wimlib.net/downloads or compile it from sources. Make sure to place `libwim-15.dll` in `\.out` directory and `libwim.lib`, `wimlib.h` to `.\.lib\devel` directory as this directory is linked in cgo. Run `go build -x -o .\.out\packer-plugin-wim.exe .` from root directory of repository. For additional important information check below.
 
+## Config parameters
+
+| Parameter name |  Description |
+| -------------- |  ----------- |
+| **image_name** |  Allow you to set custom name for your file. If not set, a `default.wim` name will be used                            |
+| **image_path** |  Allow for custom path where result file should be placed. This can be either a root path or relative path where binary runs. If not set a current directory where binary started will be used     |
+| **compression**|  A compression which should be used when creating WIM file. Supported formats are: `0` = None, `1` = XPRESS, `2` = LZX, `3` = LZMS.  |
+
 ## Important notes
 
 - To use this plugin on Windows, a required DLL file from wimlib is necessary called libwim-15.dll. It can be found in wimlib archive for Windows runtime: https://wimlib.net/downloads. This DLL is part of archive in released artifacts so its ready to go bundle. If you build plugin from sources then you need to make sure to have this library correctly placed in one of those paths:

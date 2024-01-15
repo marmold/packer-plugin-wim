@@ -27,11 +27,12 @@ type Config struct {
 	// Main packer paramters from common module.
 	common.PackerConfig `mapstructure:",squash"`
 
-	// Paramters specific to this post processor.
-	// Those paramters names should start from capital leter.
+	// Parameters specific to this post processor.
+	// Those Parameters names should start from capital later.
 	// Only such properties are exported to other packages then local scope.
-	ImageName        string `mapstructure:"name" required:"true"`
-	ImageDescription string `mapstructure:"description"`
+	ImageName        string `mapstructure:"image_name" required:"false"`
+	ImagePath        string `mapstructure:"image_path" required:"false"`
+	ImageDescription string `mapstructure:"description" required:"false"`
 	ImageCompression uint32 `mapstructure:"compression" required:"true"`
 
 	ctx interpolate.Context
@@ -49,6 +50,7 @@ func (pp *PostProcessor) Configure(raws ...interface{}) error {
 
 	// Decode configuration
 	err := config.Decode(&pp.config, &config.DecodeOpts{
+		PluginType:         "packer.post-processor.wim",
 		Interpolate:        true,
 		InterpolateContext: &pp.config.ctx,
 	}, raws...)
@@ -61,6 +63,14 @@ func (pp *PostProcessor) Configure(raws ...interface{}) error {
 	// Set any defaults if needed or validate.
 	if pp.config.ImageName == "" {
 		pp.config.ImageName = "default"
+	}
+
+	if pp.config.ImagePath == "" {
+		currentDir, err := os.Getwd()
+		if err != nil {
+			return fmt.Errorf("Unable to get current working directory path")
+		}
+		pp.config.ImagePath = filepath.Join(currentDir, "wim")
 	}
 
 	if pp.config.ImageCompression > 3 {
@@ -85,25 +95,18 @@ func (pp PostProcessor) PostProcess(context context.Context, ui packer.Ui, baseA
 		return nil, false, false, err
 	}
 
-	// Get current working directory.
-	currentDir, err := os.Getwd()
-	if err != nil {
-		return nil, false, false, fmt.Errorf("Unable to get current working directory path")
-	}
-	ui.Message(fmt.Sprintf("Current directory: '%s'", currentDir))
-
 	// Declare new final artifact
 	newArtifact := &wim.WimArtifact{
-		Path:        filepath.Join(currentDir, "wim"),
 		Name:        pp.config.ImageName,
+		Path:        pp.config.ImagePath,
 		Compression: pp.config.ImageCompression,
 	}
 
 	// Create base directory to be used as workspace for artifact creation.
 	// Should the directory be erased with all content within?
-	err = os.MkdirAll(newArtifact.Path, 0777)
+	err := os.MkdirAll(newArtifact.Path, 0777)
 	if err != nil {
-		return nil, false, false, fmt.Errorf("Unable to create final directory for opeartions: '%s'.", newArtifact.Path)
+		return nil, false, false, fmt.Errorf("Unable to create final directory for operations: '%s'.", newArtifact.Path)
 	}
 	ui.Message(fmt.Sprintf("Base directory for artifact created: '%s'", newArtifact.Path))
 

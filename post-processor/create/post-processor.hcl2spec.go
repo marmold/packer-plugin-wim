@@ -18,6 +18,10 @@ type FlatConfig struct {
 	PackerOnError       *string           `mapstructure:"packer_on_error" cty:"packer_on_error" hcl:"packer_on_error"`
 	PackerUserVars      map[string]string `mapstructure:"packer_user_variables" cty:"packer_user_variables" hcl:"packer_user_variables"`
 	PackerSensitiveVars []string          `mapstructure:"packer_sensitive_variables" cty:"packer_sensitive_variables" hcl:"packer_sensitive_variables"`
+	ImageName           *string           `mapstructure:"image_name" required:"true" cty:"image_name" hcl:"image_name"`
+	ImagePath           *string           `mapstructure:"image_path" required:"true" cty:"image_path" hcl:"image_path"`
+	ImageDescription    *string           `mapstructure:"description" required:"false" cty:"description" hcl:"description"`
+	ImageCompression    *uint32           `mapstructure:"compression" required:"true" cty:"compression" hcl:"compression"`
 }
 
 // FlatMapstructure returns a new FlatConfig.
@@ -40,6 +44,10 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 		"packer_on_error":            &hcldec.AttrSpec{Name: "packer_on_error", Type: cty.String, Required: false},
 		"packer_user_variables":      &hcldec.AttrSpec{Name: "packer_user_variables", Type: cty.Map(cty.String), Required: false},
 		"packer_sensitive_variables": &hcldec.AttrSpec{Name: "packer_sensitive_variables", Type: cty.List(cty.String), Required: false},
+		"image_name":                 &hcldec.AttrSpec{Name: "image_name", Type: cty.String, Required: false},
+		"image_path":                 &hcldec.AttrSpec{Name: "image_path", Type: cty.String, Required: false},
+		"description":                &hcldec.AttrSpec{Name: "description", Type: cty.String, Required: false},
+		"compression":                &hcldec.AttrSpec{Name: "compression", Type: cty.Number, Required: false},
 	}
 	return s
 }
