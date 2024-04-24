@@ -14,6 +14,17 @@
             "skip_export": "true"
         }
     ],
+
+    "provisioners": [
+        {
+            "type": "powershell",
+            "inline": [
+                "Write-host \"First hello from $env:COMPUTERNAME\"",
+		        "New-Item -ItemType File -Path \"C:\\\" -Name \"provision_test\" -Force"
+            ]
+        }
+    ],
+
     "post-processors":[
         {
             "type": "wim",
