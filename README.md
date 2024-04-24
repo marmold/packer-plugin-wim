@@ -26,7 +26,6 @@ To be able to build the plugin on Windows, install GCC compiler that suit you th
 | -------------- |  ------------------------------------------------------------------------------------------- |
 | **image_name** |  Allow you to set custom name for your file. If not set, a `default.wim` name will be used   |
 | **image_path** |  Allow for custom path where result file should be placed. This can be either a root path or relative path where binary runs. If not set a current directory where binary started will be used                                   |
-| **description**|  Allow you to add description                                                                |
 | **compression**|  A compression which should be used when creating WIM file. Supported formats are: `0` = None, `1` = XPRESS, `2` = LZX, `3` = LZMS.                                                                                                |
 
 ## Examples
