@@ -8,9 +8,9 @@ This project use cgo and C under the hood to create WIM images for cross platfor
 
 ## Installation
 
-Currently to use the plugin with packer you need to either download latest release binary from: https://github.com/marmold/packer-plugin-wim/releases or build it from sources.
+Currently to use the plugin with packer you need to either download latest release binary for platform you are interested from: https://github.com/marmold/packer-plugin-wim/releases or build it from sources.
 
-To enable plugin in packer make sure the plugin is placed under `$env:PACKER_PLUGIN_PATH` if configured or in default directory path for plugins. For more information check: https://developer.hashicorp.com/packer/docs/plugins/install-plugins.
+To enable plugin in packer make sure the plugin is extracted under `$env:PACKER_PLUGIN_PATH` if configured or in default directory path for plugins equal to `$HOME/.config/packer/plugins` on UNIX, or `%APPDATA%\packer.d\plugins` for Windows. For more information check: https://developer.hashicorp.com/packer/docs/configure.
 
 ## Build
 
@@ -22,11 +22,16 @@ To be able to build the plugin on Windows, install GCC compiler that suit you th
 
 ## Config parameters
 
-| Parameter name |  Description |
-| -------------- |  ----------- |
-| **image_name** |  Allow you to set custom name for your file. If not set, a `default.wim` name will be used                            |
-| **image_path** |  Allow for custom path where result file should be placed. This can be either a root path or relative path where binary runs. If not set a current directory where binary started will be used     |
-| **compression**|  A compression which should be used when creating WIM file. Supported formats are: `0` = None, `1` = XPRESS, `2` = LZX, `3` = LZMS.  |
+| Parameter name |  Description                                                                                 |
+| -------------- |  ------------------------------------------------------------------------------------------- |
+| **image_name** |  Allow you to set custom name for your file. If not set, a `default.wim` name will be used   |
+| **image_path** |  Allow for custom path where result file should be placed. This can be either a root path or relative path where binary runs. If not set a current directory where binary started will be used                                   |
+| **description**|  Allow you to add description                                                                |
+| **compression**|  A compression which should be used when creating WIM file. Supported formats are: `0` = None, `1` = XPRESS, `2` = LZX, `3` = LZMS.                                                                                                |
+
+## Examples
+
+For some simple examples follow [examples](examples/examples.md)
 
 ## Important notes
 
