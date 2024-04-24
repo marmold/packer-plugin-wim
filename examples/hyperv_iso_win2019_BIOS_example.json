@@ -1,0 +1,39 @@
+{
+    "builders": [
+        {
+            "type": "hyperv-iso",
+            "disk_size": 30000,
+            "cd_files": [
+                ".\\unattended\\win_2019\\BIOS\\autounattend.xml"
+            ],
+            "boot_wait": 1,
+            "boot_command": ["<enter>"],
+            "iso_url": "{{user `iso_url`}}",
+            "iso_checksum": "{{user `iso_checksum`}}",
+            "communicator": "winrm",
+            "winrm_username": "Administrator",
+            "winrm_password": "SamplePassword",
+            "winrm_timeout": "20m",
+            "memory": 2048,
+            "generation": 1,
+            "skip_export": "true"
+          }
+    ],
+
+    "provisioners": [
+        {
+            "type": "powershell",
+            "inline": [
+                "Write-host \"First hello from $env:COMPUTERNAME\"",
+                "New-Item -ItemType File -Path \"C:\\\" -Name \"provision_test\" -Force"
+            ]
+        }
+    ],
+
+    "post-processors": [
+        {
+            "type": "wim",
+            "compression": 2
+        }
+    ]
+}
