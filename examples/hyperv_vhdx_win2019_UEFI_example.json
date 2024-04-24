@@ -20,7 +20,7 @@
             "type": "powershell",
             "inline": [
                 "Write-host \"First hello from $env:COMPUTERNAME\"",
-		        "New-Item -ItemType File -Path \"C:\\\" -Name \"provision_test\" -Force"
+                "New-Item -ItemType File -Path \"C:\\\" -Name \"provision_test\" -Force"
             ]
         }
     ],
