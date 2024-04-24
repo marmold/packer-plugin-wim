@@ -1,6 +1,6 @@
 # Examples
 
-This document describe some simple examples on how to create WIM file with some minor changes  supported platform like hyper-v. It
+This document describe some simple examples on how to create WIM file with some minor changes.
 
 ## Hyper-V
 
