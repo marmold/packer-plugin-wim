@@ -16,3 +16,9 @@
 .lib/
 .out/
 wimlib/
+packer_cache/
+output-hyperv-*
+*.iso
+*.vhd
+*.vhdx
+*.wim
