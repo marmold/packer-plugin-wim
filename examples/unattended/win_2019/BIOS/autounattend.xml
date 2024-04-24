@@ -125,9 +125,9 @@
             <EnableNetwork>true</EnableNetwork>
             <UserData>
                 <ProductKey>
-                    <!--
+                    <!-- By default evaluation/trial system used in examples do not need key and will be enough for PoC-s. For any other insert your key and uncoment this section.
                     <WillShowUI>OnError</WillShowUI>
-                    <Key>H9NDH-3KJ74-TVB33-R67MG-MKQD4</Key>
+                    <Key><Insert key here></Key>
                     -->
                 </ProductKey>
                 <AcceptEula>true</AcceptEula>
